@@ -1,4 +1,4 @@
-package br.dagostini.jshare.comum;
+package br.dagostini.jshare.comun;
 
 import java.rmi.RemoteException;
 import java.util.List;
