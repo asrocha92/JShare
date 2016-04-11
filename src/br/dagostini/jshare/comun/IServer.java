@@ -1,12 +1,13 @@
 package br.dagostini.jshare.comun;
 
+import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
 
 import br.dagostini.jshare.comum.pojos.Arquivo;
 
-public interface IServer {
+public interface IServer extends Remote{
 
 	public static final String NOME_SERVICO = "JShare";
 
