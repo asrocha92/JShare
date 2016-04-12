@@ -26,7 +26,6 @@ import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.rmi.RemoteException;
@@ -34,14 +33,12 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.awt.event.ActionEvent;
-import javax.swing.JTextPane;
 
 public class MenuServer extends JFrame implements IServer {
 
