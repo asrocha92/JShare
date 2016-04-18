@@ -293,7 +293,7 @@ public class MenUI extends MenuServer {
 	}
 
 	protected void conectar() {
-		//nome
+		// nome
 		String nome = txt_user.getText().trim();
 		if (nome.length() == 0) {
 			JOptionPane.showMessageDialog(this, "Você precisa digitar um nome!");
@@ -321,13 +321,19 @@ public class MenUI extends MenuServer {
 			c.setNome(nome);
 			c.setIp(host);
 			c.setPorta(porta);
-			JOptionPane.showMessageDialog(null, "rmi://" + host + ":" + porta + "/" + IServer.NOME_SERVICO);
-			servidor = (IServer) Naming.lookup("rmi://" + host + ":" + porta + "/" + IServer.NOME_SERVICO);
 			
+			// JOptionPane.showMessageDialog(null, "rmi://" + host + ":" + porta
+			// + "/" + IServer.NOME_SERVICO);
+			servidor = (IServer) Naming.lookup("rmi://" + host + ":" + porta + "/" + IServer.NOME_SERVICO);
+
 			servidor.registrarCliente(c);
 			servidor.publicarListaArquivos(c, new ListarDiretoriosArquivos().listarArquivos());
-			servidor.procurarArquivo(txt_NArquivo.getText().trim());
-			
+			Map<Cliente, List<Arquivo>> resultList = servidor.procurarArquivo(txt_NArquivo.getText().trim());
+			for (Map.Entry<Cliente, List<Arquivo>> entry : resultList.entrySet()) {
+				for (Arquivo arq : entry.getValue()){
+					escreverDowload(servidor.baixarArquivo(arq), arq.getNome());
+				}
+			}
 			System.out.println("fim");
 
 		} catch (Exception e) {
@@ -341,6 +347,9 @@ public class MenUI extends MenuServer {
 
 	}
 
+	private void escreverDowload(byte[] dados, String nome) {
+		new LeituraEscritaDeArquivos().escreva(new File(".\\Share\\Upload\\" + "Cópia de " + nome), dados);
+	}
 	// Implemetação dos métodos da Interface IServer
 
 	@Override
@@ -390,8 +399,4 @@ public class MenUI extends MenuServer {
 		mapaArquivos.put(c, new ListarDiretoriosArquivos().listarArquivos());
 	}
 
-	// Métodos a parte
-	private void escreverDowload(byte[] dados, File f) {
-		new LeituraEscritaDeArquivos().escreva(new File(".\\Share\\Upload\\" + "Cópia de " + f.getName()), dados);
-	}
 }

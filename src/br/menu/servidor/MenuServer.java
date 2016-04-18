@@ -320,21 +320,25 @@ public class MenuServer extends JFrame implements IServer {
 
 		mostrar(c.getNome() + ", com ip:" + c.getIp() + " se conectou.");
 		mapaClientes.put(c.getIp(), c);
-
 	}
 
 	@Override
 	public Map<Cliente, List<Arquivo>> procurarArquivo(String nome) throws RemoteException {
+		mostrar("pesquisas: Arq ->" + nome + ": " + mapaArquivos.size());
 		Map<Cliente, List<Arquivo>> resultMapArq = new HashMap<>();
 		List<Arquivo> listArq = new ArrayList<>();
 		for (Map.Entry<Cliente, List<Arquivo>> entry : mapaArquivos.entrySet()) {
-			for (Arquivo arq : entry.getValue()) {
-				if (arq.getNome().equals(nome)) {
+			mostrar("entrou na pesquisa");
+			for (Arquivo arq : entry.getValue()){
+				if (arq.getNome().equals(nome)){
+					mostrar("salvou arq na lista");
 					listArq.add(arq);
 				}
-			}
-			if (listArq.size() > 0)
+			}	
+			if (listArq.size() > 0){
+				mostrar("Retornou um Mapa Arquivo para baixar");
 				resultMapArq.put(entry.getKey(), listArq);
+			}
 		}
 		return resultMapArq;
 	}
