@@ -8,15 +8,19 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
 public class LeituraEscritaDeArquivos {
+	
+	public LeituraEscritaDeArquivos(){}
 
 	public LeituraEscritaDeArquivos(File f) {
 
+		System.out.println("Inicio da leitura");
 		// 2 - Ao receber um parâmetro f lê seu conteúdo e o coloca na memória.
 		// Todo o conteúdo do arquivo se encontra no array de bytes agora.
 		byte[] dados = leia(f);
 
+		System.out.println("Inicio da copia");
 		// 3 - Pega o array de bytes e escreve em num novo arquivo.
-		escreva(new File("Cópia de " + f.getName()), dados);
+		escreva(new File(".\\Share\\Upload\\"+"Cópia de " + f.getName()), dados);
 	}
 
 	public byte[] leia(File arq) {
@@ -41,8 +45,9 @@ public class LeituraEscritaDeArquivos {
 
 	public static void main(String[] args) {
 
+		String nomeDoArquivo = "resultados.txt";
 		// 1 - Instancia um objeto da classe LerArquivo.
-		new LeituraEscritaDeArquivos(new File("logo.png"));
+		new LeituraEscritaDeArquivos(new File(".\\Share\\Dowload\\" + nomeDoArquivo));
 	}
 
 }

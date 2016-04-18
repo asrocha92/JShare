@@ -4,6 +4,8 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
+import br.dagostini.exemplos.LeituraEscritaDeArquivos;
+import br.dagostini.exemplos.ListarDiretoriosArquivos;
 import br.dagostini.jshare.comum.pojos.Arquivo;
 import br.dagostini.jshare.comun.Cliente;
 import br.dagostini.jshare.comun.IServer;
@@ -26,6 +28,7 @@ import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.rmi.RemoteException;
@@ -33,6 +36,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -65,9 +70,6 @@ public class MenuServer extends JFrame implements IServer {
 		});
 	}
 
-	/**
-	 * Create the frame.
-	 */
 	public MenuServer() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 708, 304);
@@ -166,7 +168,7 @@ public class MenuServer extends JFrame implements IServer {
 	private Map<String, Cliente> mapaClientes = new HashMap<>();
 
 	/** Contém todos os nomes dos arquivos diponibilizados pelos usuários */
-	private Map<String, Arquivo> mapaArquivos = new HashMap<>();
+	private Map<Cliente, List<Arquivo>> mapaArquivos = new HashMap<>();
 
 	/** Referência a esse próprio objeto depois de exportar */
 	private IServer servidor;
@@ -236,7 +238,7 @@ public class MenuServer extends JFrame implements IServer {
 			}
 
 		} catch (Exception e) {
-			// TODO: handle exception
+			e.printStackTrace();
 		}
 
 	}
@@ -294,10 +296,6 @@ public class MenuServer extends JFrame implements IServer {
 		}
 	}
 
-	// ================================
-	// mensagenss
-	// ================================
-
 	protected void fecharTodosClientes() {
 		mostrar("ENCERRANDO CONEXÃO DE TODOS CLIENTES NO SERVIDOR");
 	}
@@ -319,32 +317,60 @@ public class MenuServer extends JFrame implements IServer {
 
 			throw new RemoteException("Alguém já está conectado com este IP: " + c.getIp());
 		}
-		
+
 		mostrar(c.getNome() + ", com ip:" + c.getIp() + " se conectou.");
 		mapaClientes.put(c.getIp(), c);
-		
+
 	}
 
 	@Override
 	public Map<Cliente, List<Arquivo>> procurarArquivo(String nome) throws RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+		Map<Cliente, List<Arquivo>> resultMapArq = new HashMap<>();
+		List<Arquivo> listArq = new ArrayList<>();
+		for (Map.Entry<Cliente, List<Arquivo>> entry : mapaArquivos.entrySet()) {
+			for (Arquivo arq : entry.getValue()) {
+				if (arq.getNome().equals(nome)) {
+					listArq.add(arq);
+				}
+			}
+			if (listArq.size() > 0)
+				resultMapArq.put(entry.getKey(), listArq);
+		}
+		return resultMapArq;
 	}
 
 	@Override
 	public byte[] baixarArquivo(Arquivo arq) throws RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+
+		LeituraEscritaDeArquivos lea = new LeituraEscritaDeArquivos();
+
+		File f = new File(".\\Share\\Dowload\\" + arq.getNome());
+
+		byte[] dados = lea.leia(f);
+
+		lea.escreva(new File(".\\Share\\Upload\\" + "Cópia de " + f.getName()), dados);
+
+		return dados;
 	}
 
 	@Override
 	public void desconectar(Cliente c) throws RemoteException {
-		
+		mapaClientes.remove(c);
+		mapaArquivos.remove(c);
+		mostrar("Servidor encerrado e cliente removido: " + c.getNome());
 	}
 
 	@Override
 	public void publicarListaArquivos(Cliente c, List<Arquivo> lista) throws RemoteException {
-		// TODO Auto-generated method stub
-		
+
+		if (mapaArquivos.get(c.getIp()) != null) {
+			mostrar("Retornando erro para cliente duplicado.");
+
+			throw new RemoteException("Já está na lista este IP");
+		}
+		for (Arquivo arquivo : lista) {
+			JOptionPane.showConfirmDialog(null, arquivo.getNome() + " : " + arquivo.getTamanho());
+		}
+		mapaArquivos.put(c, lista);
 	}
 }
