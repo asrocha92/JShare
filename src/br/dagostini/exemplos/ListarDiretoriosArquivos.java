@@ -30,6 +30,7 @@ public class ListarDiretoriosArquivos {
 				Arquivo arq = new Arquivo();
 				arq.setNome(file.getName());
 				arq.setTamanho(file.length());
+				arq.setFile(file);
 				listaArquivos.add(arq);
 			}	
 		}

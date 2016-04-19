@@ -34,7 +34,7 @@ public class LerIp {
 	
 	
 	/** Busca todos os endereços IP, presente na máquina */
-	public List<String> carregaIp() {
+	public List<String> returnListIp() {
 		List<String> listaIp = new ArrayList<>();
 		try {
 			Enumeration<NetworkInterface> netIfc = NetworkInterface.getNetworkInterfaces();

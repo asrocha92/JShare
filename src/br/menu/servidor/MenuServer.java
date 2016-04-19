@@ -5,7 +5,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import br.dagostini.exemplos.LeituraEscritaDeArquivos;
-import br.dagostini.exemplos.ListarDiretoriosArquivos;
+import br.dagostini.exemplos.LerIp;
 import br.dagostini.jshare.comum.pojos.Arquivo;
 import br.dagostini.jshare.comun.Cliente;
 import br.dagostini.jshare.comun.IServer;
@@ -219,24 +219,9 @@ public class MenuServer extends JFrame implements IServer {
 	/** Busca todos os endereços IP, presente na máquina */
 	private void carregaIp() {
 		try {
-			Enumeration<NetworkInterface> netIfc = NetworkInterface.getNetworkInterfaces();
-
-			while (netIfc.hasMoreElements()) {
-				NetworkInterface ifc = netIfc.nextElement();
-				if (ifc.isUp()) {
-					Enumeration<InetAddress> addresses = ifc.getInetAddresses();
-					while (addresses.hasMoreElements()) {
-						InetAddress addr = addresses.nextElement();
-
-						String ip = addr.getHostAddress();
-
-						if (ip.matches("[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}")) {
-							cbx_ip.addItem(ip);
-						}
-					}
-				}
+			for (String res : new LerIp().returnListIp()) {
+				cbx_ip.addItem(res);				
 			}
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -312,31 +297,26 @@ public class MenuServer extends JFrame implements IServer {
 
 	@Override
 	public void registrarCliente(Cliente c) throws RemoteException {
-		if (mapaClientes.get(c.getIp()) != null) {
-			mostrar("Retornando erro para cliente duplicado.");
-
-			throw new RemoteException("Alguém já está conectado com este IP: " + c.getIp());
-		}
-
 		mostrar(c.getNome() + ", com ip:" + c.getIp() + " se conectou.");
 		mapaClientes.put(c.getIp(), c);
 	}
 
 	@Override
 	public Map<Cliente, List<Arquivo>> procurarArquivo(String nome) throws RemoteException {
-		mostrar("pesquisas: Arq ->" + nome + ": " + mapaArquivos.size());
+		mostrar("pesquisa: Arq ->" + nome);
+
 		Map<Cliente, List<Arquivo>> resultMapArq = new HashMap<>();
-		List<Arquivo> listArq = new ArrayList<>();
 		for (Map.Entry<Cliente, List<Arquivo>> entry : mapaArquivos.entrySet()) {
-			mostrar("entrou na pesquisa");
-			for (Arquivo arq : entry.getValue()){
-				if (arq.getNome().equals(nome)){
-					mostrar("salvou arq na lista");
+			List<Arquivo> listArq = new ArrayList<>();
+			for (Arquivo arq : entry.getValue()) {
+				if (arq.getNome().equals(nome)) {
 					listArq.add(arq);
 				}
-			}	
-			if (listArq.size() > 0){
-				mostrar("Retornou um Mapa Arquivo para baixar");
+			}
+			if (listArq.size() > 0) {
+				for (int i = 0; i < listArq.size(); i++) {
+					mostrar("Arquivo: " + listArq.get(i).getNome() + " - tamanho: " + listArq.get(i).getTamanho());
+				}
 				resultMapArq.put(entry.getKey(), listArq);
 			}
 		}
@@ -345,15 +325,15 @@ public class MenuServer extends JFrame implements IServer {
 
 	@Override
 	public byte[] baixarArquivo(Arquivo arq) throws RemoteException {
-
+		JOptionPane.showMessageDialog(this, arq.getNome());
+		new LeituraEscritaDeArquivos(new File(".\\Share\\Dowload\\" + arq.getNome() ));
+		
 		LeituraEscritaDeArquivos lea = new LeituraEscritaDeArquivos();
 
-		File f = new File(".\\Share\\Dowload\\" + arq.getNome());
+		File file = new File(".\\Share\\Dowload\\" + arq.getNome());
 
-		byte[] dados = lea.leia(f);
-
-		lea.escreva(new File(".\\Share\\Upload\\" + "Cópia de " + f.getName()), dados);
-
+		byte[] dados = lea.leia(file);
+		mostrar("Dados" + dados);
 		return dados;
 	}
 
@@ -361,19 +341,13 @@ public class MenuServer extends JFrame implements IServer {
 	public void desconectar(Cliente c) throws RemoteException {
 		mapaClientes.remove(c);
 		mapaArquivos.remove(c);
-		mostrar("Servidor encerrado e cliente removido: " + c.getNome());
+		mostrar("Cliente: " + c.getNome().toUpperCase() + " desconectado!");
 	}
 
 	@Override
 	public void publicarListaArquivos(Cliente c, List<Arquivo> lista) throws RemoteException {
-
-		if (mapaArquivos.get(c.getIp()) != null) {
-			mostrar("Retornando erro para cliente duplicado.");
-
-			throw new RemoteException("Já está na lista este IP");
-		}
 		for (Arquivo arquivo : lista) {
-			JOptionPane.showConfirmDialog(null, arquivo.getNome() + " : " + arquivo.getTamanho());
+			mostrar("publico arquivos: " + arquivo.getNome() + " : " + arquivo.getTamanho());
 		}
 		mapaArquivos.put(c, lista);
 	}

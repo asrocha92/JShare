@@ -32,7 +32,10 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +43,7 @@ import java.util.Map;
 import java.awt.event.ActionEvent;
 import javax.swing.JTable;
 
-public class MenUI extends MenuServer {
+public class MenUI extends JFrame implements IServer {
 
 	private JTable tb_dowload;
 	private JLabel lblNome;
@@ -52,10 +55,13 @@ public class MenUI extends MenuServer {
 	private JLabel lblPortaServidor;
 	private JTextField txt_portaServidor;
 	private JButton bt_pesquisar;
-	private JButton btnFechar;
+	private JButton bt_fechar;
 	private JPanel contentPane;
 	private JTextField txt_portaLocal;
 	private JComboBox<String> cbx_ipLocal;
+	private JButton bt_iniciaServico;
+	private JButton bt_paraServico;
+	private JButton bt_conectar;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -72,15 +78,15 @@ public class MenUI extends MenuServer {
 
 	public MenUI() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 834, 464);
+		setBounds(100, 100, 870, 302);
 		contentPane = new JPanel();
 		contentPane.setBackground(Color.BLACK);
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		GridBagLayout gbl_contentPane = new GridBagLayout();
-		gbl_contentPane.columnWidths = new int[] { 0, 213, 0, 0, 76, 0, 0, 0 };
+		gbl_contentPane.columnWidths = new int[] { 0, 213, 0, 0, 76, 0, 0, 0, 0 };
 		gbl_contentPane.rowHeights = new int[] { 0, 0, 0, 0, 0, 0, 0, 0 };
-		gbl_contentPane.columnWeights = new double[] { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, Double.MIN_VALUE };
+		gbl_contentPane.columnWeights = new double[] { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE };
 		gbl_contentPane.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE };
 		contentPane.setLayout(gbl_contentPane);
 
@@ -123,6 +129,20 @@ public class MenUI extends MenuServer {
 		gbc_txt_portaLocal.gridy = 0;
 		contentPane.add(txt_portaLocal, gbc_txt_portaLocal);
 		txt_portaLocal.setColumns(10);
+
+		bt_iniciaServico = new JButton("Inicia serviço");
+		GridBagConstraints gbc_bt_iniciaServico = new GridBagConstraints();
+		gbc_bt_iniciaServico.insets = new Insets(0, 0, 5, 5);
+		gbc_bt_iniciaServico.gridx = 4;
+		gbc_bt_iniciaServico.gridy = 0;
+		contentPane.add(bt_iniciaServico, gbc_bt_iniciaServico);
+
+		bt_paraServico = new JButton("Para serviço");
+		GridBagConstraints gbc_bt_paraServio = new GridBagConstraints();
+		gbc_bt_paraServio.insets = new Insets(0, 0, 5, 5);
+		gbc_bt_paraServio.gridx = 5;
+		gbc_bt_paraServio.gridy = 0;
+		contentPane.add(bt_paraServico, gbc_bt_paraServio);
 
 		lblNome = new JLabel("Nome usuário:");
 		lblNome.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -180,12 +200,19 @@ public class MenUI extends MenuServer {
 		txt_portaServidor.setFont(new Font("Tahoma", Font.PLAIN, 12));
 		txt_portaServidor.setText("1818");
 		GridBagConstraints gbc_txt_portaServidor = new GridBagConstraints();
-		gbc_txt_portaServidor.insets = new Insets(0, 0, 5, 0);
+		gbc_txt_portaServidor.insets = new Insets(0, 0, 5, 5);
 		gbc_txt_portaServidor.fill = GridBagConstraints.HORIZONTAL;
 		gbc_txt_portaServidor.gridx = 6;
 		gbc_txt_portaServidor.gridy = 1;
 		contentPane.add(txt_portaServidor, gbc_txt_portaServidor);
 		txt_portaServidor.setColumns(10);
+
+		bt_conectar = new JButton("Conectar");
+		GridBagConstraints gbc_bt_conectar = new GridBagConstraints();
+		gbc_bt_conectar.insets = new Insets(0, 0, 5, 0);
+		gbc_bt_conectar.gridx = 7;
+		gbc_bt_conectar.gridy = 1;
+		contentPane.add(bt_conectar, gbc_bt_conectar);
 
 		lblNomeDoArquivo = new JLabel("Nome do arquivo:");
 		lblNomeDoArquivo.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -219,7 +246,7 @@ public class MenUI extends MenuServer {
 		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
 		gbc_scrollPane.insets = new Insets(0, 0, 5, 0);
 		gbc_scrollPane.gridheight = 3;
-		gbc_scrollPane.gridwidth = 7;
+		gbc_scrollPane.gridwidth = 8;
 		gbc_scrollPane.fill = GridBagConstraints.BOTH;
 		gbc_scrollPane.gridx = 0;
 		gbc_scrollPane.gridy = 3;
@@ -228,19 +255,19 @@ public class MenUI extends MenuServer {
 		tb_dowload = new JTable();
 		scrollPane.setViewportView(tb_dowload);
 
-		btnFechar = new JButton("SAIR");
-		btnFechar.setFont(new Font("Arial", Font.PLAIN, 12));
-		GridBagConstraints gbc_btnFechar = new GridBagConstraints();
-		gbc_btnFechar.fill = GridBagConstraints.HORIZONTAL;
-		gbc_btnFechar.gridx = 6;
-		gbc_btnFechar.gridy = 6;
-		contentPane.add(btnFechar, gbc_btnFechar);
+		bt_fechar = new JButton("SAIR");
+		bt_fechar.setFont(new Font("Arial", Font.PLAIN, 12));
+		GridBagConstraints gbc_bt_fechar = new GridBagConstraints();
+		gbc_bt_fechar.fill = GridBagConstraints.HORIZONTAL;
+		gbc_bt_fechar.gridx = 7;
+		gbc_bt_fechar.gridy = 6;
+		contentPane.add(bt_fechar, gbc_bt_fechar);
 
 		configurar();
 	}
 
 	// =========================
-	// instâncias de variavéis
+	// instâncias de variavéis local
 	// =========================
 
 	/** Contém todos cliente conectados no servidor */
@@ -250,23 +277,60 @@ public class MenUI extends MenuServer {
 	private Map<Cliente, List<Arquivo>> mapaArquivos = new HashMap<>();
 
 	/** Referência a esse próprio objeto depois de exportar */
-	private IServer servidor;
+	private IServer servico;
 
+	private Cliente cliente;
+
+	// =================================
+	// instacias de variaveis do servico
+	// =================================
+
+	private Map<String, Cliente> mapaClienteServico = new HashMap<>();
+
+	private Map<Cliente, List<Arquivo>> mapaArquivosServico = new HashMap<>();
+
+	private IServer servicoServidor;
+
+	private Registry registry;
+
+	// ==================================================================
 	// Métodos
-
+	// ==================================================================
 	private void configurar() {
-		// carrega dados no cbx_IP
-		carregaIp();
+
+		cbx_ipLocal.addItem(new LerIp().retornarIP());
+
 		txt_user.setText("Alex");
 		txt_IPServidor.setText("127.0.0.1");
 		txt_NArquivo.setText("resultados.txt");
 
+		bt_paraServico.setEnabled(false);
+		bt_pesquisar.setEnabled(false);
+
 		bt_pesquisar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				pesquisar();
+			}
+		});
+
+		bt_iniciaServico.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				iniciarServico();
+			}
+		});
+
+		bt_paraServico.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				encerrarServico();
+			}
+		});
+
+		bt_conectar.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				conectar();
 			}
 		});
-
 		// se fechar a tela pelo Close, ela irá fechar a conexão
 		// e derrubar todos que estão conectados ao mesmo
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -277,19 +341,30 @@ public class MenUI extends MenuServer {
 					for (int i = 0; i < mapaClientes.size(); i++) {
 						desconectar(mapaClientes.get(i));
 					}
+					if(servico != null)
+						servico.desconectar(cliente);
 				} catch (RemoteException e1) {
 					e1.printStackTrace();
 				}
 			}
 		});
 
-	}
+		bt_fechar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+				try {
+					for (int i = 0; i < mapaClientes.size(); i++) {
+						desconectar(mapaClientes.get(i));
+					}
+					if(servico != null)
+						servico.desconectar(cliente);
+					encerrarServico();
+				} catch (RemoteException e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
 
-	private void carregaIp() {
-		List<String> list;
-		for (int i = 0; i < (list = new LerIp().carregaIp()).size(); i++) {
-			cbx_ipLocal.addItem(list.get(i));
-		}
 	}
 
 	protected void conectar() {
@@ -316,26 +391,18 @@ public class MenUI extends MenuServer {
 		int porta = Integer.parseInt(strPorta);
 
 		try {
+			cliente = new Cliente();
+			cliente.setNome(nome);
+			cliente.setIp(host);
+			cliente.setPorta(porta);
 
-			Cliente c = new Cliente();
-			c.setNome(nome);
-			c.setIp(host);
-			c.setPorta(porta);
-			
-			// JOptionPane.showMessageDialog(null, "rmi://" + host + ":" + porta
-			// + "/" + IServer.NOME_SERVICO);
-			servidor = (IServer) Naming.lookup("rmi://" + host + ":" + porta + "/" + IServer.NOME_SERVICO);
+			servico = (IServer) Naming.lookup("rmi://" + host + ":" + porta + "/" + IServer.NOME_SERVICO);
 
-			servidor.registrarCliente(c);
-			servidor.publicarListaArquivos(c, new ListarDiretoriosArquivos().listarArquivos());
-			Map<Cliente, List<Arquivo>> resultList = servidor.procurarArquivo(txt_NArquivo.getText().trim());
-			for (Map.Entry<Cliente, List<Arquivo>> entry : resultList.entrySet()) {
-				for (Arquivo arq : entry.getValue()){
-					escreverDowload(servidor.baixarArquivo(arq), arq.getNome());
-				}
-			}
-			System.out.println("fim");
+			servico.registrarCliente(cliente);
+			servico.publicarListaArquivos(cliente, new ListarDiretoriosArquivos().listarArquivos());
 
+			bt_pesquisar.setEnabled(true);
+		
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null,
 					"\n\n-------------------------------------------------------\n"
@@ -347,31 +414,106 @@ public class MenUI extends MenuServer {
 
 	}
 
-	private void escreverDowload(byte[] dados, String nome) {
-		new LeituraEscritaDeArquivos().escreva(new File(".\\Share\\Upload\\" + "Cópia de " + nome), dados);
+	protected void pesquisar() {
+		try {
+			Map<Cliente, List<Arquivo>> resultList = servico.procurarArquivo(txt_NArquivo.getText().trim());
+			for (Map.Entry<Cliente, List<Arquivo>> entry : resultList.entrySet()) {
+				for (Arquivo arq : entry.getValue()) {
+					System.err.println("Arquivo: " + arq.getNome() + " - tamanho:" + arq.getTamanho());
+					escreverDowload(servico.baixarArquivo(arq), arq.getFile());
+				}
+			}
+			System.out.println("fim");
+		} catch (RemoteException e) {
+			JOptionPane.showMessageDialog(this, "Erro ao pesquisar");
+			e.printStackTrace();
+		}
 	}
+
+	private void escreverDowload(byte[] dados, File nome) {
+		new LeituraEscritaDeArquivos().escreva(new File(".\\Share\\Upload\\" + "Cópia de " + nome.getName()), dados);
+	}
+
+	// ===================================================================
+	// metódos para iniciar serviço para outros clientes possa se conectar
+	// ===================================================================
+
+	protected void iniciarServico() {
+		String strPorta = txt_portaLocal.getText().trim();
+		if (!strPorta.matches("[0-9]+") || strPorta.length() > 5) {
+			JOptionPane.showMessageDialog(this, "A porta deve ser uma valor númerico de no máximo 5 dígitos!");
+			return;
+		}
+
+		int intPorta = Integer.parseInt(strPorta);
+		if (intPorta < 1024 || intPorta > 65535) {
+			JOptionPane.showMessageDialog(this, "A porta deve estar entre os valores de 1024 à 65535!");
+			return;
+		}
+
+		try {
+			servicoServidor = (IServer) UnicastRemoteObject.exportObject(this, 0);
+			registry = LocateRegistry.createRegistry(intPorta);
+			registry.rebind(IServer.NOME_SERVICO, servicoServidor);
+
+			cbx_ipLocal.setEnabled(false);
+			txt_portaLocal.setEnabled(false);
+			bt_iniciaServico.setEnabled(false);
+
+			bt_paraServico.setEnabled(true);
+		} catch (RemoteException e) {
+			JOptionPane.showMessageDialog(this, "Erro criando registro, verifique se a porta já não está sendo usada.");
+			e.printStackTrace();
+		}
+	}
+
+	protected void encerrarServico() {
+
+		try {
+			UnicastRemoteObject.unexportObject(this, true);
+			UnicastRemoteObject.unexportObject(registry, true);
+
+			cbx_ipLocal.setEnabled(true);
+			txt_portaLocal.setEnabled(true);
+			bt_iniciaServico.setEnabled(true);
+
+			bt_paraServico.setEnabled(false);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	// ===================================================================
 	// Implemetação dos métodos da Interface IServer
+	// ===================================================================
 
 	@Override
 	public void registrarCliente(Cliente c) throws RemoteException {
-		if (mapaClientes.get(c.getIp()) != null) {
+		if (mapaClienteServico.get(c.getIp()) != null) {
+			// mostrar("Retornando erro para cliente duplicado.");
+
 			throw new RemoteException("Alguém já está conectado com este IP: " + c.getIp());
 		}
-		mapaClientes.put(c.getIp(), c);
+
+		// mostrar(c.getNome() + ", com ip:" + c.getIp() + " se conectou.");
+		mapaClienteServico.put(c.getIp(), c);
 	}
 
 	@Override
 	public Map<Cliente, List<Arquivo>> procurarArquivo(String nome) throws RemoteException {
+		// mostrar("pesquisa: Arq ->" + nome);
+
 		Map<Cliente, List<Arquivo>> resultMapArq = new HashMap<>();
-		List<Arquivo> ListArq = new ArrayList<>();
-		for (int i = 0; i < mapaArquivos.size(); i++) {
-			for (int j = 0; j < mapaArquivos.values().size(); j++) {
-				if (mapaArquivos.get(i).get(j).getNome().equals(nome)) {
-					ListArq.add(mapaArquivos.get(i).get(j));
+		List<Arquivo> listArq = new ArrayList<>();
+		for (Map.Entry<Cliente, List<Arquivo>> entry : mapaArquivosServico.entrySet()) {
+			for (Arquivo arq : entry.getValue()) {
+				if (arq.getNome().equals(nome)) {
+					listArq.add(arq);
 				}
 			}
-			if (ListArq != null) {
-				resultMapArq.put((Cliente) mapaArquivos.get(i), ListArq);
+			if (listArq.size() > 0) {
+				resultMapArq.put(entry.getKey(), listArq);
+				listArq.removeAll(listArq);
 			}
 		}
 		return resultMapArq;
@@ -379,24 +521,32 @@ public class MenUI extends MenuServer {
 
 	@Override
 	public byte[] baixarArquivo(Arquivo arq) throws RemoteException {
-		LeituraEscritaDeArquivos lea = new LeituraEscritaDeArquivos();
+
 		File f = new File(".\\Share\\Dowload\\" + arq.getNome());
-		byte[] dados = lea.leia(f);
+
+		byte[] dados = new LeituraEscritaDeArquivos().leia(f);
+
 		return dados;
 	}
 
 	@Override
 	public void desconectar(Cliente c) throws RemoteException {
-		mapaClientes.clear();
-		mapaArquivos.clear();
+		mapaClientes.remove(c);
+		mapaArquivos.remove(c);
+		// mostrar("Servidor encerrado e cliente removido: " + c.getNome());
 	}
 
 	@Override
 	public void publicarListaArquivos(Cliente c, List<Arquivo> lista) throws RemoteException {
-		if (mapaArquivos.get(c.getIp()) != null) {
+
+		if (mapaArquivosServico.get(c.getIp()) != null) {
+			// mostrar("Retornando erro para cliente duplicado.");
+
 			throw new RemoteException("Já está na lista este IP");
 		}
-		mapaArquivos.put(c, new ListarDiretoriosArquivos().listarArquivos());
+		for (Arquivo arquivo : lista) {
+			JOptionPane.showConfirmDialog(null, arquivo.getNome() + " : " + arquivo.getTamanho());
+		}
+		mapaArquivosServico.put(c, lista);
 	}
-
 }
