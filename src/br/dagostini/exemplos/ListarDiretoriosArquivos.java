@@ -39,19 +39,19 @@ public class ListarDiretoriosArquivos {
 	
 	
 
-	public static void main(String[] args) {
-		
-		ListarDiretoriosArquivos lda = new ListarDiretoriosArquivos();
-		
-		System.out.println("Diretórios");
-		for (Diretorio dir : lda.listarDiretorios()) {
-			System.out.println("\t" + dir.getNome());
-		}
-		
-		System.out.println("Arquivos");
-		for (Arquivo arq : lda.listarArquivos()) {
-			System.out.println("\t" + arq.getTamanho() + "\t" + arq.getNome());
-		}
-
-	}
+//	public static void main(String[] args) {
+//		
+//		ListarDiretoriosArquivos lda = new ListarDiretoriosArquivos();
+//		
+//		System.out.println("Diretórios");
+//		for (Diretorio dir : lda.listarDiretorios()) {
+//			System.out.println("\t" + dir.getNome());
+//		}
+//		
+//		System.out.println("Arquivos");
+//		for (Arquivo arq : lda.listarArquivos()) {
+//			System.out.println("\t" + arq.getTamanho() + "\t" + arq.getNome());
+//		}
+//
+//	}
 }

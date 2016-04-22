@@ -54,9 +54,6 @@ public class MenuServer extends JFrame implements IServer {
 	private JButton bt_EncerraServidor;
 	private JTextArea txtA_msg;
 
-	/**
-	 * Launch the application.
-	 */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -303,7 +300,7 @@ public class MenuServer extends JFrame implements IServer {
 
 	@Override
 	public Map<Cliente, List<Arquivo>> procurarArquivo(String nome) throws RemoteException {
-		mostrar("pesquisa: Arq ->" + nome);
+		mostrar("Foi pesquisado o \"Arq\" ->" + nome);
 
 		Map<Cliente, List<Arquivo>> resultMapArq = new HashMap<>();
 		for (Map.Entry<Cliente, List<Arquivo>> entry : mapaArquivos.entrySet()) {
@@ -314,9 +311,6 @@ public class MenuServer extends JFrame implements IServer {
 				}
 			}
 			if (listArq.size() > 0) {
-				for (int i = 0; i < listArq.size(); i++) {
-					mostrar("Arquivo: " + listArq.get(i).getNome() + " - tamanho: " + listArq.get(i).getTamanho());
-				}
 				resultMapArq.put(entry.getKey(), listArq);
 			}
 		}
@@ -325,14 +319,8 @@ public class MenuServer extends JFrame implements IServer {
 
 	@Override
 	public byte[] baixarArquivo(Arquivo arq) throws RemoteException {
-		JOptionPane.showMessageDialog(this, arq.getNome());
-		new LeituraEscritaDeArquivos(new File(".\\Share\\Dowload\\" + arq.getNome() ));
-		
-		LeituraEscritaDeArquivos lea = new LeituraEscritaDeArquivos();
-
 		File file = new File(".\\Share\\Dowload\\" + arq.getNome());
-
-		byte[] dados = lea.leia(file);
+		byte[] dados = new LeituraEscritaDeArquivos().leia(file);
 		mostrar("Dados" + dados);
 		return dados;
 	}
@@ -347,7 +335,7 @@ public class MenuServer extends JFrame implements IServer {
 	@Override
 	public void publicarListaArquivos(Cliente c, List<Arquivo> lista) throws RemoteException {
 		for (Arquivo arquivo : lista) {
-			mostrar("publico arquivos: " + arquivo.getNome() + " : " + arquivo.getTamanho());
+			mostrar("Cliente:" + c.getNome() + "/ Publico arq: " + arquivo.getNome() + " : " + arquivo.getTamanho());
 		}
 		mapaArquivos.put(c, lista);
 	}
