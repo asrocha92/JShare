@@ -43,5 +43,7 @@
 	
 	+ Na classe ListarDiretoriosArquios foi separado em método listar arquivos e listar diretorios.
 	 
-	
+# Criação de barra de progresso
+ 	+ Criação do pacote br.alex.barraRederer
+ 	+ Criação da classe BarraRenderer	
 	
