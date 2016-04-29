@@ -434,6 +434,8 @@ public class MenUI2 extends JFrame implements IServer {
 							+ " CORRETOS, SE NÃO HÁ BLOQUEIO DE FIREWALL OU ANTIVIRUS.\n"
 							+ "-------------------------------------------------------------------\n\n");
 			e.printStackTrace();
+			conectar(IPservidorFixo, PORTAservidorFixo);
+			JOptionPane.showMessageDialog(this, "Reconectando ao servidor");
 		}
 
 	}
@@ -614,7 +616,6 @@ public class MenUI2 extends JFrame implements IServer {
 		mostrar("ENCERRANDO CONEXÃO DE TODOS CLIENTES NO SERVIDOR");
 	}
 
-	
 	private void mostrar(String string) {
 		txtA_logs.append(sdf.format(new Date()));
 		txtA_logs.append(" -> ");
