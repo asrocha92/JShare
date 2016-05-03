@@ -76,7 +76,6 @@ public class MenUI2 extends JFrame implements IServer {
 	private JTextArea txtA_logs;
 	private JScrollPane scrollPane_1;
 	private JScrollPane scrollPane_2;
-	private JList list_arquivo;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -213,9 +212,9 @@ public class MenUI2 extends JFrame implements IServer {
 		gbc_scrollPane_1.gridx = 0;
 		gbc_scrollPane_1.gridy = 3;
 		contentPane.add(scrollPane_1, gbc_scrollPane_1);
-
-		list_arquivo = new JList();
-		scrollPane_1.setViewportView(list_arquivo);
+		
+		table_pesquisa = new JTable();
+		scrollPane_1.setViewportView(table_pesquisa);
 
 		bt_dowload = new JButton("Baixar arquivo");
 		GridBagConstraints gbc_bt_dowload = new GridBagConstraints();
@@ -341,7 +340,10 @@ public class MenUI2 extends JFrame implements IServer {
 	// Métodos
 	// ==================================================================
 	private void configurar() {
-
+		table = new TableArquivos();
+		table.iniciarTabela();
+		table_pesquisa.setModel(table);
+		
 		cbx_ipLocal.addItem(new LerIp().retornarIP());
 
 		txt_user.setText("Alex");
@@ -379,17 +381,6 @@ public class MenUI2 extends JFrame implements IServer {
 		bt_dowload.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				fazerDowload();
-			}
-		});
-
-		list_arquivo.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if (e.getButton() == MouseEvent.BUTTON1) {
-					if (e.getClickCount() == 2) {
-						list_arquivo.getSelectedIndex();
-					}
-				}
 			}
 		});
 
@@ -455,53 +446,49 @@ public class MenUI2 extends JFrame implements IServer {
 	}
 
 	protected void pesquisar() {
-		list_arquivo.removeAll();
 		resultMapArquivos.clear();
 		try {
 			resultMapArquivos = servico.procurarArquivo(txt_nomeArq.getText().trim());
-			for (Map.Entry<Cliente, List<Arquivo>> entry : resultMapArquivos.entrySet()) {
-				addListaDeArqAposPesq(entry.getValue());
-			}
+
 		} catch (RemoteException e) {
 			JOptionPane.showMessageDialog(this, "Erro ao pesquisar");
-			e.printStackTrace();
 			conectar(IPservidorFixo, PORTAservidorFixo);
-			JOptionPane.showMessageDialog(this, "Reconectando ao servidor");
+			JOptionPane.showMessageDialog(this, "Reconectando ao servidor atual");
 		}
 	}
 
 	private void fazerDowload() {
-		try {
-			int valorSelecao = list_arquivo.getSelectedIndex(); 
-			
-			if(valorSelecao > -1){
-				String nomeArq = (String) list_arquivo.getModel().getElementAt(valorSelecao);
-				for (Map.Entry<Cliente, List<Arquivo>> entry : resultMapArquivos.entrySet()) {
-					for (Arquivo arq : entry.getValue()) {
-						if(nomeArq.equals(arq.getNome())){
-							//servico volta a ser nulo
-							servico = null;
-							//muda ip e porta para conectar no cliente que tem o arquivo disponivel para dowload
-							txt_IPServidor.setText(entry.getKey().getIp());
-							txt_portaServidor.setText(String.valueOf(entry.getKey().getPorta()));
-							//faz a conexão no cliente 
-							conectar(txt_IPServidor.getText(), txt_portaServidor.getText());
-							//baixa arquivo e escre na pasta upload
-							escreverDowload(servico.baixarArquivo(arq), arq.getFile());
-							
-							return;							
-						}
-					}
-				}
-			}else{
-				JOptionPane.showMessageDialog(this, "Selecione um item para que possa ser baixado!");
-			}
-		} catch (RemoteException e) {
-			JOptionPane.showMessageDialog(this, "Erro ao fazer dowload");
-			e.printStackTrace();
-			conectar(IPservidorFixo, PORTAservidorFixo);
-			JOptionPane.showMessageDialog(this, "Reconectando ao servidor");
-		}
+//		try {
+//			int valorSelecao = list_arquivo.getSelectedIndex(); 
+//			
+//			if(valorSelecao > -1){
+//				String nomeArq = (String) list_arquivo.getModel().getElementAt(valorSelecao);
+//				for (Map.Entry<Cliente, List<Arquivo>> entry : resultMapArquivos.entrySet()) {
+//					for (Arquivo arq : entry.getValue()) {
+//						if(nomeArq.equals(arq.getNome())){
+//							//servico volta a ser nulo
+//							servico = null;
+//							//muda ip e porta para conectar no cliente que tem o arquivo disponivel para dowload
+//							txt_IPServidor.setText(entry.getKey().getIp());
+//							txt_portaServidor.setText(String.valueOf(entry.getKey().getPorta()));
+//							//faz a conexão no cliente 
+//							conectar(txt_IPServidor.getText(), txt_portaServidor.getText());
+//							//baixa arquivo e escre na pasta upload
+//							escreverDowload(servico.baixarArquivo(arq), arq.getFile());
+//							
+//							return;							
+//						}
+//					}
+//				}
+//			}else{
+//				JOptionPane.showMessageDialog(this, "Selecione um item para que possa ser baixado!");
+//			}
+//		} catch (RemoteException e) {
+//			JOptionPane.showMessageDialog(this, "Erro ao fazer dowload");
+//			e.printStackTrace();
+//			conectar(IPservidorFixo, PORTAservidorFixo);
+//			JOptionPane.showMessageDialog(this, "Reconectando ao servidor");
+//		}
 	}
 
 	private void escreverDowload(byte[] dados, File nome) {
@@ -527,23 +514,23 @@ public class MenUI2 extends JFrame implements IServer {
 		}
 	}
 
-	public void addListaDeArqAposPesq(List<Arquivo> lista) throws RemoteException {
-		list_arquivo.removeAll();
-
-		ListModel<String> model = new AbstractListModel<String>() {
-			@Override
-			public int getSize() {
-				return lista.size();
-			}
-
-			@Override
-			public String getElementAt(int index) {
-				return lista.get(index).getNome();
-			}
-		};
-		list_arquivo.setModel(model);
-
-	}
+//	public void addListaDeArqAposPesq(List<Arquivo> lista) throws RemoteException {
+//		list_arquivo.removeAll();
+//
+//		ListModel<String> model = new AbstractListModel<String>() {
+//			@Override
+//			public int getSize() {
+//				return lista.size();
+//			}
+//
+//			@Override
+//			public String getElementAt(int index) {
+//				return lista.get(index).getNome();
+//			}
+//		};
+//		list_arquivo.setModel(model);
+//
+//	}
 
 	// ===================================================================
 	// Instâncias de variavéis para o serviço
@@ -566,6 +553,8 @@ public class MenUI2 extends JFrame implements IServer {
 	 * escuta na porta TCP/IP
 	 */
 	private Registry registryClientServ;
+	private JTable table_pesquisa;
+	private TableArquivos table;
 
 	// ====================================================================================
 	// Métodos

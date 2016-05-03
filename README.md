@@ -46,4 +46,7 @@
 # Criação de barra de progresso
  	+ Criação do pacote br.alex.barraRederer
  	+ Criação da classe BarraRenderer	
+ 	
+# Criação da classe TableArquivos
+	+No que irá disponibilizar os dados do cliente que tem o arquivo e o nome do arquivo e o tamanho
 	
