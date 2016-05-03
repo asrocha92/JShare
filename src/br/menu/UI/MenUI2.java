@@ -3,7 +3,9 @@ package br.menu.UI;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.TableModel;
 
+import br.alex.util.EmendaArqCliente;
 import br.alex.util.Util;
 import br.dagostini.exemplos.LeituraEscritaDeArquivos;
 import br.dagostini.exemplos.LerIp;
@@ -212,7 +214,7 @@ public class MenUI2 extends JFrame implements IServer {
 		gbc_scrollPane_1.gridx = 0;
 		gbc_scrollPane_1.gridy = 3;
 		contentPane.add(scrollPane_1, gbc_scrollPane_1);
-		
+
 		table_pesquisa = new JTable();
 		scrollPane_1.setViewportView(table_pesquisa);
 
@@ -317,12 +319,13 @@ public class MenUI2 extends JFrame implements IServer {
 	// ==================================================================
 	// instâncias de variavéis local
 	// ==================================================================
-	
+
 	/**
-	 * Vai conter o IP do servidor Fixo, caso de falha volte a conectar no servidor atual
+	 * Vai conter o IP do servidor Fixo, caso de falha volte a conectar no
+	 * servidor atual
 	 */
 	private static String IPservidorFixo = null;
-	
+
 	private static String PORTAservidorFixo = null;
 
 	/** Contém todos cliente conectados no servidor */
@@ -340,10 +343,9 @@ public class MenUI2 extends JFrame implements IServer {
 	// Métodos
 	// ==================================================================
 	private void configurar() {
-		table = new TableArquivos();
-		table.iniciarTabela();
-		table_pesquisa.setModel(table);
-		
+
+		carregarTabela();
+
 		cbx_ipLocal.addItem(new LerIp().retornarIP());
 
 		txt_user.setText("Alex");
@@ -445,64 +447,68 @@ public class MenUI2 extends JFrame implements IServer {
 		}
 	}
 
-	protected void pesquisar() {
-		resultMapArquivos.clear();
-		try {
-			resultMapArquivos = servico.procurarArquivo(txt_nomeArq.getText().trim());
+	public void carregarTabela() {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				table = new TableArquivos();
+				table_pesquisa.setModel(table);
+			}
+		}).start();
+	}
 
+	protected void pesquisar() {
+		try {
+			table_pesquisa.setModel(table.atualizarListaClinArq(servico.procurarArquivo(txt_nomeArq.getText())));
 		} catch (RemoteException e) {
-			JOptionPane.showMessageDialog(this, "Erro ao pesquisar");
+			JOptionPane.showMessageDialog(this, "Erro ao pesquisar, ou conexão com o servidor");
 			conectar(IPservidorFixo, PORTAservidorFixo);
 			JOptionPane.showMessageDialog(this, "Reconectando ao servidor atual");
 		}
 	}
 
 	private void fazerDowload() {
-//		try {
-//			int valorSelecao = list_arquivo.getSelectedIndex(); 
-//			
-//			if(valorSelecao > -1){
-//				String nomeArq = (String) list_arquivo.getModel().getElementAt(valorSelecao);
-//				for (Map.Entry<Cliente, List<Arquivo>> entry : resultMapArquivos.entrySet()) {
-//					for (Arquivo arq : entry.getValue()) {
-//						if(nomeArq.equals(arq.getNome())){
-//							//servico volta a ser nulo
-//							servico = null;
-//							//muda ip e porta para conectar no cliente que tem o arquivo disponivel para dowload
-//							txt_IPServidor.setText(entry.getKey().getIp());
-//							txt_portaServidor.setText(String.valueOf(entry.getKey().getPorta()));
-//							//faz a conexão no cliente 
-//							conectar(txt_IPServidor.getText(), txt_portaServidor.getText());
-//							//baixa arquivo e escre na pasta upload
-//							escreverDowload(servico.baixarArquivo(arq), arq.getFile());
-//							
-//							return;							
-//						}
-//					}
-//				}
-//			}else{
-//				JOptionPane.showMessageDialog(this, "Selecione um item para que possa ser baixado!");
-//			}
-//		} catch (RemoteException e) {
-//			JOptionPane.showMessageDialog(this, "Erro ao fazer dowload");
-//			e.printStackTrace();
-//			conectar(IPservidorFixo, PORTAservidorFixo);
-//			JOptionPane.showMessageDialog(this, "Reconectando ao servidor");
-//		}
+		try {
+			int row = table_pesquisa.getSelectedRow();
+			if (row > -1) {
+				EmendaArqCliente result = table.retornarDados(row);
+				// servico volta a ser nulo
+				servico = null;
+				// muda ip e porta para conectar no cliente que tem o
+				// arquivo disponivel para dowload
+				txt_IPServidor.setText(result.getCliente().getIp());
+				txt_portaServidor.setText(String.valueOf(result.getCliente().getPorta()));
+				// faz a conexão no cliente
+				conectar(txt_IPServidor.getText(), txt_portaServidor.getText());
+				// baixa arquivo e escre na pasta upload
+				if(false)
+					escreverDowload(servico.baixarArquivo(result.getArquivo()), result.getArquivo().getFile());
+
+				JOptionPane.showMessageDialog(this, "Efetuado download com sucesso.");
+				// return;
+			} else {
+				JOptionPane.showMessageDialog(this, "Selecione um item para que possa ser baixado!");
+			}
+		} catch (RemoteException e) {
+			JOptionPane.showMessageDialog(this, "Erro ao fazer dowload");
+			e.printStackTrace();
+			conectar(IPservidorFixo, PORTAservidorFixo);
+			JOptionPane.showMessageDialog(this, "Reconectando ao servidor");
+		}
 	}
 
 	private void escreverDowload(byte[] dados, File nome) {
-		new LeituraEscritaDeArquivos().escreva(new File(".\\Share\\Upload\\" + "Cópia de " + nome.getName()), dados);
+		new LeituraEscritaDeArquivos().escreva(new File(".\\Share\\Download\\" + "Cópia de " + nome.getName()), dados);
 	}
 
 	private void instaciarClient() throws RuntimeException {
 		Util util = new Util();
 		if (cliente == null) {
-			if(IPservidorFixo == null || PORTAservidorFixo == null){
+			if (IPservidorFixo == null || PORTAservidorFixo == null) {
 				IPservidorFixo = txt_IPServidor.getText();
 				PORTAservidorFixo = txt_portaServidor.getText();
 			}
-			
+
 			cliente = new Cliente();
 			cliente.setNome(util.vrfNome(txt_user.getText()));
 			cliente.setIp(util.vrfIP(cbx_ipLocal.getSelectedItem().toString()));
@@ -513,24 +519,6 @@ public class MenUI2 extends JFrame implements IServer {
 			cliente.setPorta(util.vrfPorta(txt_portaLocal.getText()));
 		}
 	}
-
-//	public void addListaDeArqAposPesq(List<Arquivo> lista) throws RemoteException {
-//		list_arquivo.removeAll();
-//
-//		ListModel<String> model = new AbstractListModel<String>() {
-//			@Override
-//			public int getSize() {
-//				return lista.size();
-//			}
-//
-//			@Override
-//			public String getElementAt(int index) {
-//				return lista.get(index).getNome();
-//			}
-//		};
-//		list_arquivo.setModel(model);
-//
-//	}
 
 	// ===================================================================
 	// Instâncias de variavéis para o serviço
@@ -625,6 +613,12 @@ public class MenUI2 extends JFrame implements IServer {
 	@Override
 	public Map<Cliente, List<Arquivo>> procurarArquivo(String nome) throws RemoteException {
 		mostrar("Foi pesquisado o \"Arq\" ->" + nome);
+		nome.trim();
+		// Nestá linha se não foi digitado nenhum arquivo, retorna a lista de
+		// todos que estão conectados no serviço
+		// e todo os arquivos disponibilizados por cada um no serviço
+		if (nome.length() == 0)
+			return mapArqServ;
 
 		Map<Cliente, List<Arquivo>> resultMapArq = new HashMap<>();
 		for (Map.Entry<Cliente, List<Arquivo>> entry : mapArqServ.entrySet()) {
@@ -648,7 +642,7 @@ public class MenUI2 extends JFrame implements IServer {
 		mostrar("Feito dowload do -> " + arq.getNome());
 		return dados;
 	}
-	
+
 	@Override
 	public void desconectar(Cliente c) throws RemoteException {
 		mapClientServ.remove(c);

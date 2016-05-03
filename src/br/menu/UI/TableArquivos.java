@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
 
 import br.alex.util.EmendaArqCliente;
 import br.dagostini.jshare.comum.pojos.Arquivo;
@@ -12,8 +13,7 @@ import br.dagostini.jshare.comun.Cliente;
 
 public class TableArquivos extends AbstractTableModel {
 	
-	private List<EmendaArqCliente> lista;
-	private TableArquivos table;
+	private List<EmendaArqCliente> lista = new ArrayList<>();
 	
 	public TableArquivos() {
 		
@@ -21,7 +21,7 @@ public class TableArquivos extends AbstractTableModel {
 
 	@Override
 	public int getRowCount() {
-		return 0;
+		return lista.size();
 	}
 
 	@Override
@@ -54,18 +54,8 @@ public class TableArquivos extends AbstractTableModel {
 		}
 	}
 
-	public TableArquivos iniciarTabela(){
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				table = new TableArquivos();
-				lista = new ArrayList<>();
-			}
-		}).start();
-		return table;
-	}
-
-	public void listTodosClinArq(Map<Cliente, List<Arquivo>> map){
+	public TableArquivos atualizarListaClinArq(Map<Cliente, List<Arquivo>> map){
+		lista.removeAll(this.lista);
 		for (Map.Entry<Cliente, List<Arquivo>> entry : map.entrySet()) {
 			for (Arquivo arq : entry.getValue()) {
 				EmendaArqCliente obj = new EmendaArqCliente();
@@ -75,9 +65,16 @@ public class TableArquivos extends AbstractTableModel {
 				obj.getArquivo().setNome(arq.getNome());
 				obj.getArquivo().setTamanho(arq.getTamanho());
 				obj.getArquivo().setFile(arq.getFile());
+				System.out.print(obj.getCliente().getIp());
 				lista.add(obj);
 			}
 		}
+		this.fireTableStructureChanged();
+		return this;
+	}
+	
+	public EmendaArqCliente retornarDados(int row){
+		return lista.get(row);
 	}
 	
 }
