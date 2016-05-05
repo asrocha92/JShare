@@ -504,7 +504,7 @@ public class MenUI2 extends JFrame implements IServer {
 	private void escreverDowload(byte[] dados, File nome) {
 		try{
 			JOptionPane.showMessageDialog(this,nome.getName());
-			new LeituraEscritaDeArquivos().escreva(new File(".\\Share\\Upload\\" + "Cópia de " + nome.getName()), dados);
+			new LeituraEscritaDeArquivos().escreva(new File(".\\Share\\Download\\" + "Cópia de " + nome.getName()), dados);
 		}catch (Exception e){
 			e.printStackTrace();
 		}
@@ -646,7 +646,7 @@ public class MenUI2 extends JFrame implements IServer {
 
 	@Override
 	public byte[] baixarArquivo(Arquivo arq) throws RemoteException {
-		File file = new File(".\\Share\\Dowload\\" + arq.getNome());
+		File file = new File(".\\Share\\Upload\\" + arq.getNome());
 		byte[] dados = new LeituraEscritaDeArquivos().leia(file);
 		mostrar("Feito dowload do -> " + arq.getNome());
 		return dados;

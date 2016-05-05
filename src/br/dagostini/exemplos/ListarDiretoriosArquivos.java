@@ -11,7 +11,7 @@ import br.dagostini.jshare.comum.pojos.Diretorio;
 
 public class ListarDiretoriosArquivos {
 	
-	private File dirStart = new File(".\\Share\\Dowload\\");	
+	private File dirStart = new File(".\\Share\\Upload\\");	
 	
 	public List<Diretorio> listarDiretorios(){
 		List<Diretorio> listaDiretorios = new ArrayList<>();
