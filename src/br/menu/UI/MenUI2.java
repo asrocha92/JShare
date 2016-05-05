@@ -421,13 +421,13 @@ public class MenUI2 extends JFrame implements IServer {
 
 			bt_pesquisar.setEnabled(true);
 
+			JOptionPane.showMessageDialog(this, "Conectado ao servidor!");
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null,
 					e.getMessage() + "\n\n-------------------------------------------------------\n"
 							+ "ERRO: VERIFIQUE SE O SERVIDOR ESTÁ RODANDO, SE O IP E PORTA ESTÃO"
 							+ " CORRETOS, SE NÃO HÁ BLOQUEIO DE FIREWALL OU ANTIVIRUS.\n"
 							+ "-------------------------------------------------------------------\n\n");
-			e.printStackTrace();
 			if(contaErro < 2){
 				JOptionPane.showMessageDialog(this, "Reconectando ao servidor");
 				conectar(IPservidorFixo, PORTAservidorFixo, contaErro + 1);				
@@ -447,8 +447,9 @@ public class MenUI2 extends JFrame implements IServer {
 				servico.desconectar(cliente);
 			if (servidorServ != null)
 				encerrarServ();
+			JOptionPane.showMessageDialog(this, "Encerrado serviço.");
 		} catch (RemoteException e1) {
-			e1.printStackTrace();
+			return;
 		}
 	}
 
@@ -494,10 +495,9 @@ public class MenUI2 extends JFrame implements IServer {
 				JOptionPane.showMessageDialog(this, "Selecione um item para que possa ser baixado!");
 			}
 		} catch (RemoteException e) {
-			JOptionPane.showMessageDialog(this, "Erro ao fazer dowload");
-			e.printStackTrace();
-			conectar(IPservidorFixo, PORTAservidorFixo, 0);
-			JOptionPane.showMessageDialog(this, "Reconectando ao servidor");
+			JOptionPane.showMessageDialog(this, "Erro ao fazer dowload\n"+e.getMessage());
+			JOptionPane.showMessageDialog(this, "Reconectando ao servidor pai");
+			conectar(IPservidorFixo, PORTAservidorFixo, 1);
 		}
 	}
 
@@ -506,7 +506,7 @@ public class MenUI2 extends JFrame implements IServer {
 			JOptionPane.showMessageDialog(this,nome.getName());
 			new LeituraEscritaDeArquivos().escreva(new File(".\\Share\\Download\\" + "Cópia de " + nome.getName()), dados);
 		}catch (Exception e){
-			e.printStackTrace();
+			throw new RuntimeException(e.getMessage() + "\nLocalização:\n" + e.getLocalizedMessage());
 		}
 	}
 
@@ -573,7 +573,7 @@ public class MenUI2 extends JFrame implements IServer {
 		} catch (RemoteException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage()
 					+ "\n\nErro ao iniciar serviço, verifique se a porta, já está sendo usada ou se firewall está bloqueando.");
-			e.printStackTrace();
+			return;
 		}
 	}
 
@@ -594,7 +594,7 @@ public class MenUI2 extends JFrame implements IServer {
 			mostrar("SERVIDOR ENCERRADO.");
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			return;
 		}
 	}
 
