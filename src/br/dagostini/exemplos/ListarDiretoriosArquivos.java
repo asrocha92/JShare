@@ -4,12 +4,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 import br.dagostini.jshare.comum.pojos.Arquivo;
 import br.dagostini.jshare.comum.pojos.Diretorio;
 
 public class ListarDiretoriosArquivos {
 	
-	private File dirStart = new File(".\\Share\\Dowload\\.");	
+	private File dirStart = new File(".\\Share\\Dowload\\");	
 	
 	public List<Diretorio> listarDiretorios(){
 		List<Diretorio> listaDiretorios = new ArrayList<>();

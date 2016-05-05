@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.JOptionPane;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 
@@ -65,7 +66,6 @@ public class TableArquivos extends AbstractTableModel {
 				obj.getArquivo().setNome(arq.getNome());
 				obj.getArquivo().setTamanho(arq.getTamanho());
 				obj.getArquivo().setFile(arq.getFile());
-				System.out.print(obj.getCliente().getIp());
 				lista.add(obj);
 			}
 		}

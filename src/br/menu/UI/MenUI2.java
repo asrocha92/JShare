@@ -37,6 +37,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.IOException;
 import java.net.SocketException;
 import java.rmi.ConnectIOException;
 import java.rmi.Naming;
@@ -376,7 +377,7 @@ public class MenUI2 extends JFrame implements IServer {
 		bt_conectar.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				conectar(txt_IPServidor.getText(), txt_portaServidor.getText());
+				conectar(txt_IPServidor.getText(), txt_portaServidor.getText(), 0);
 			}
 		});
 
@@ -405,7 +406,7 @@ public class MenUI2 extends JFrame implements IServer {
 
 	}
 
-	protected void conectar(String hostServidor, String portaServidor) {
+	protected void conectar(String hostServidor, String portaServidor, int contaErro) {
 		Util util = new Util();
 		try {
 			hostServidor = util.vrfIP(hostServidor);
@@ -427,8 +428,12 @@ public class MenUI2 extends JFrame implements IServer {
 							+ " CORRETOS, SE NÃO HÁ BLOQUEIO DE FIREWALL OU ANTIVIRUS.\n"
 							+ "-------------------------------------------------------------------\n\n");
 			e.printStackTrace();
-			conectar(IPservidorFixo, PORTAservidorFixo);
-			JOptionPane.showMessageDialog(this, "Reconectando ao servidor");
+			if(contaErro < 2){
+				JOptionPane.showMessageDialog(this, "Reconectando ao servidor");
+				conectar(IPservidorFixo, PORTAservidorFixo, contaErro + 1);				
+			}else{
+				JOptionPane.showMessageDialog(this, "Não é possível conectar ao servidor");
+			}
 		}
 
 	}
@@ -462,7 +467,7 @@ public class MenUI2 extends JFrame implements IServer {
 			table_pesquisa.setModel(table.atualizarListaClinArq(servico.procurarArquivo(txt_nomeArq.getText())));
 		} catch (RemoteException e) {
 			JOptionPane.showMessageDialog(this, "Erro ao pesquisar, ou conexão com o servidor");
-			conectar(IPservidorFixo, PORTAservidorFixo);
+			conectar(IPservidorFixo, PORTAservidorFixo, 0);
 			JOptionPane.showMessageDialog(this, "Reconectando ao servidor atual");
 		}
 	}
@@ -479,10 +484,9 @@ public class MenUI2 extends JFrame implements IServer {
 				txt_IPServidor.setText(result.getCliente().getIp());
 				txt_portaServidor.setText(String.valueOf(result.getCliente().getPorta()));
 				// faz a conexão no cliente
-				conectar(txt_IPServidor.getText(), txt_portaServidor.getText());
+				conectar(txt_IPServidor.getText(), txt_portaServidor.getText(), 0);
 				// baixa arquivo e escre na pasta upload
-				if(false)
-					escreverDowload(servico.baixarArquivo(result.getArquivo()), result.getArquivo().getFile());
+				escreverDowload(servico.baixarArquivo(result.getArquivo()), result.getArquivo().getFile());
 
 				JOptionPane.showMessageDialog(this, "Efetuado download com sucesso.");
 				// return;
@@ -492,13 +496,18 @@ public class MenUI2 extends JFrame implements IServer {
 		} catch (RemoteException e) {
 			JOptionPane.showMessageDialog(this, "Erro ao fazer dowload");
 			e.printStackTrace();
-			conectar(IPservidorFixo, PORTAservidorFixo);
+			conectar(IPservidorFixo, PORTAservidorFixo, 0);
 			JOptionPane.showMessageDialog(this, "Reconectando ao servidor");
 		}
 	}
 
 	private void escreverDowload(byte[] dados, File nome) {
-		new LeituraEscritaDeArquivos().escreva(new File(".\\Share\\Download\\" + "Cópia de " + nome.getName()), dados);
+		try{
+			JOptionPane.showMessageDialog(this,nome.getName());
+			new LeituraEscritaDeArquivos().escreva(new File(".\\Share\\Upload\\" + "Cópia de " + nome.getName()), dados);
+		}catch (Exception e){
+			e.printStackTrace();
+		}
 	}
 
 	private void instaciarClient() throws RuntimeException {

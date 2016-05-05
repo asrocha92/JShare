@@ -16,7 +16,7 @@ public class Arquivo implements Serializable {
 	}
 	
 	public void setFile(File file){
-		this.file = file;
+		this.file = new File(file.toString());
 	}
 
 	public String getNome() {
